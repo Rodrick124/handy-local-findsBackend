@@ -1,6 +1,6 @@
 const mongoose = require('mongoose');
 const bcrypt = require('bcrypt');
-const User = require('../models/User');
+const { User, Admin, Seeker, Provider } = require('../models/User');
 const Service = require('../models/Service');
 const Booking = require('../models/Booking');
 
@@ -11,11 +11,10 @@ async function seed() {
   await Booking.deleteMany({});
 
   // Create admin
-  const admin = new User({
+  const admin = new Admin({
     name: 'Admin User',
     email: 'admin@example.com',
     password: await bcrypt.hash('admin123', 10),
-    role: 'admin',
   });
   await admin.save();
 
@@ -36,17 +35,15 @@ async function seed() {
   await provider2.save();
 
   // Create seekers
-  const seeker1 = new User({
+  const seeker1 = new Seeker({
     name: 'Seeker One',
     email: 'seeker1@example.com',
     password: await bcrypt.hash('seeker123', 10),
-    role: 'seeker',
   });
-  const seeker2 = new User({
+  const seeker2 = new Seeker({
     name: 'Seeker Two',
     email: 'seeker2@example.com',
     password: await bcrypt.hash('seeker123', 10),
-    role: 'seeker',
   });
   await seeker1.save();
   await seeker2.save();
