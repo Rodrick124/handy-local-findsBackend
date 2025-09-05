@@ -16,6 +16,10 @@ router.get('/users', authenticateJWT, authorizeRoles('admin'), adminController.l
 router.delete('/users/:id', authenticateJWT, authorizeRoles('admin'), adminController.deleteUser);
 
 // Analytics
-router.get('/analytics', authenticateJWT, authorizeRoles('admin'), adminController.analytics);
+// Analytics
+router.get('/analytics/summary', authenticateJWT, authorizeRoles('admin'), adminController.getSummary);
+router.get('/analytics/user-signups', authenticateJWT, authorizeRoles('admin'), adminController.getUserSignups);
+router.get('/analytics/provider-rankings', authenticateJWT, authorizeRoles('admin'), adminController.getProviderRankings);
+router.get('/analytics/booking-stats', authenticateJWT, authorizeRoles('admin'), adminController.getBookingStats);
 
 module.exports = router;

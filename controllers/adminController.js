@@ -65,21 +65,79 @@ exports.deleteUser = async (req, res) => {
 };
 
 // Analytics
-exports.analytics = async (req, res) => {
+exports.getSummary = async (req, res) => {
   try {
+    const totalUsers = await User.countDocuments({});
     const totalSeekers = await User.countDocuments({ role: 'seeker' });
     const totalProviders = await User.countDocuments({ role: 'provider' });
-    const totalBookings = await Booking.countDocuments();
-    const totalRevenue = await Payment.aggregate([
-      { $match: { status: 'paid' } },
-      { $group: { _id: null, total: { $sum: '$amount' } } }
+    const totalServices = await Service.countDocuments({});
+    const completedBookings = await Booking.countDocuments({ status: 'completed' });
+
+    const monthlyBookings = await Booking.aggregate([
+      { $group: { _id: { year: { $year: '$createdAt' }, month: { $month: '$createdAt' } }, count: { $sum: 1 } } },
+      { $sort: { '_id.year': 1, '_id.month': 1 } }
     ]);
+
     res.json({
+      totalUsers,
       totalSeekers,
       totalProviders,
-      totalBookings,
-      totalRevenue: totalRevenue[0]?.total || 0
+      totalServices,
+      completedBookings,
+      monthlyBookings
     });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+};
+
+exports.getUserSignups = async (req, res) => {
+  try {
+    const userSignups = await User.aggregate([
+      { $group: { _id: { year: { $year: '$createdAt' }, month: { $month: '$createdAt' }, role: '$role' }, count: { $sum: 1 } } },
+      { $sort: { '_id.year': 1, '_id.month': 1 } },
+      { $project: { _id: 0, year: '$_id.year', month: '$_id.month', role: '$_id.role', count: 1 } }
+    ]);
+
+    // Format for chart: [ { name: "Jan 2023", Seekers: 10, Providers: 2 }, ... ]
+    const formattedSignups = {};
+    userSignups.forEach(signup => {
+      const date = new Date(signup.year, signup.month - 1);
+      const monthName = date.toLocaleString('default', { month: 'short', year: 'numeric' });
+      if (!formattedSignups[monthName]) {
+        formattedSignups[monthName] = { name: monthName };
+      }
+      formattedSignups[monthName][signup.role === 'seeker' ? 'Seekers' : 'Providers'] = signup.count;
+    });
+
+    res.json(Object.values(formattedSignups));
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+};
+
+exports.getProviderRankings = async (req, res) => {
+  try {
+    const providerRankings = await Booking.aggregate([
+      { $group: { _id: '$provider', bookings: { $sum: 1 } } },
+      { $sort: { bookings: -1 } },
+      { $lookup: { from: 'users', localField: '_id', foreignField: '_id', as: 'providerInfo' } },
+      { $unwind: '$providerInfo' },
+      { $project: { _id: 0, name: '$providerInfo.name', bookings: 1 } }
+    ]);
+    res.json(providerRankings);
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+};
+
+exports.getBookingStats = async (req, res) => {
+  try {
+    const bookingStats = await Booking.aggregate([
+      { $group: { _id: '$status', value: { $sum: 1 } } },
+      { $project: { _id: 0, name: '$_id', value: 1 } }
+    ]);
+    res.json(bookingStats);
   } catch (err) {
     res.status(500).json({ message: err.message });
   }
