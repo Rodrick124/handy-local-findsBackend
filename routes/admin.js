@@ -13,6 +13,7 @@ router.get('/services', authenticateJWT, authorizeRoles('admin'), adminControlle
 
 // User management
 router.get('/users', authenticateJWT, authorizeRoles('admin'), adminController.listUsers);
+router.delete('/users/:id', authenticateJWT, authorizeRoles('admin'), adminController.deleteUser);
 
 // Analytics
 router.get('/analytics', authenticateJWT, authorizeRoles('admin'), adminController.analytics);
