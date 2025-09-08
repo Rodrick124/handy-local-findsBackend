@@ -26,6 +26,13 @@ mongoose.connect(MONGODB_URI)
 .then(() => console.log('MongoDB connected'))
 .catch((err) => console.error('MongoDB connection error:', err));
 
+//Secure CORS configuration
+const corsOptions = {
+  origin: process.env.FRONTEND_URL,
+  optionsSuccessStatus: 200,
+};
+app.use(cors(corsOptions));
+
 
 // Auth routes
 app.use('/api/auth', require('./routes/auth'));
@@ -33,6 +40,7 @@ app.use('/api/admin', require('./routes/admin'));
 app.use('/api/services', require('./routes/services'));
 app.use('/api/bookings', require('./routes/bookings'));
 app.use('/api/reviews', require('./routes/reviews'));
+app.use('/api/providers', require('./routes/providers'));
 app.use('/api/payments', require('./routes/payments'));
 
 
