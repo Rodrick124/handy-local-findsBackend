@@ -49,7 +49,7 @@ Follow these instructions to get a copy of the project up and running on your lo
 
     ```env
     PORT=3000
-    MONGO_URI=mongodb://localhost:27017/handy-local-finds
+    MONGO_URI=mongodb://127.0.0.1:27017/handy-local-finds
     JWT_SECRET=your_super_secret_jwt_key
     ```
 

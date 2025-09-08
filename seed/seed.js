@@ -1,3 +1,4 @@
+require('dotenv').config();
 const mongoose = require('mongoose');
 const bcrypt = require('bcrypt');
 const { User, Admin, Seeker, Provider } = require('../models/User');
@@ -5,9 +6,10 @@ const Service = require('../models/Service');
 const Booking = require('../models/Booking');
 const Review = require('../models/Review');
 const Payment = require('../models/Payment');
+const MONGODB_URI = process.env.MONGO_URI || 'mongodb://127.0.0.1:27017/handy-local-finds';
 
 async function seed() {
-  await mongoose.connect(process.env.MONGO_URI || 'mongodb://localhost:27017/handy-local-finds');
+  await mongoose.connect(MONGODB_URI);
   await User.deleteMany({});
   await Service.deleteMany({});
   await Booking.deleteMany({});

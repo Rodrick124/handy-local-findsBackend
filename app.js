@@ -16,11 +16,13 @@ app.get('/api/health', (req, res) => {
   res.json({ status: 'ok', timestamp: new Date() });
 });
 
+// Mongoose strictQuery setting to suppress deprecation warning
+mongoose.set('strictQuery', true);
+
+const MONGODB_URI = process.env.MONGO_URI || 'mongodb://127.0.0.1:27017/handy-local-finds';
+
 // MongoDB connection
-mongoose.connect(process.env.MONGO_URI || 'mongodb://localhost:27017/handy-local-finds', {
-  useNewUrlParser: true,
-  useUnifiedTopology: true,
-})
+mongoose.connect(MONGODB_URI)
 .then(() => console.log('MongoDB connected'))
 .catch((err) => console.error('MongoDB connection error:', err));
 
