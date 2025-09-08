@@ -6,8 +6,20 @@ const path = require('path');
 
 const app = express();
 
+// Diagnostic middleware to log all incoming requests
+app.use((req, res, next) => {
+  console.log(`[${new Date().toISOString()}] Received ${req.method} request for ${req.originalUrl}`);
+  next();
+});
+
+// Secure CORS configuration
+const corsOptions = {
+  origin: process.env.FRONTEND_URL || 'http://localhost:5173', // Fallback for development
+  optionsSuccessStatus: 200,
+};
+
 // Middleware
-app.use(cors());
+app.use(cors(corsOptions));
 app.use(express.json());
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
@@ -26,14 +38,6 @@ mongoose.connect(MONGODB_URI)
 .then(() => console.log('MongoDB connected'))
 .catch((err) => console.error('MongoDB connection error:', err));
 
-//Secure CORS configuration
-const corsOptions = {
-  origin: process.env.FRONTEND_URL,
-  optionsSuccessStatus: 200,
-};
-app.use(cors(corsOptions));
-
-
 // Auth routes
 app.use('/api/auth', require('./routes/auth'));
 app.use('/api/admin', require('./routes/admin'));
@@ -42,8 +46,15 @@ app.use('/api/bookings', require('./routes/bookings'));
 app.use('/api/reviews', require('./routes/reviews'));
 app.use('/api/providers', require('./routes/providers'));
 app.use('/api/payments', require('./routes/payments'));
-
-
+ 
+// Handle 404 - This should be after all your routes
+app.use((req, res, next) => {
+  res.status(404).json({
+    success: false,
+    message: `API endpoint not found: ${req.method} ${req.originalUrl}`
+  });
+});
+ 
 // Centralized error handler
 const errorHandler = require('./middleware/errorHandler');
 app.use(errorHandler);
